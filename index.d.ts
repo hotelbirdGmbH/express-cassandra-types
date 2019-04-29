@@ -71,6 +71,22 @@ declare module 'express-cassandra' {
         }
     }
 
+    export interface ResultSet {
+        info: {
+            queriedHost: string,
+           triedHosts: { [key: string]: any },
+           speculativeExecutions: number,
+           achievedConsistency: number,
+           traceId: any,
+           warnings: string,
+           customPayload: string
+        },
+        rows: Array<{ '[applied]': boolean }>;
+        rowLength: number;
+        columns: Array<{ name: string, type: object }>;
+        pageState: any;
+        nextPage: any;
+    }
     // export class ExpressCassandraInstance {
     //     [key: string]: ExpressCassandraSearch;
     // }
@@ -182,7 +198,7 @@ declare module 'express-cassandra' {
         /** methods for this model */
         methods?: {
             /** methods for this model */
-            [functionName: string]: Function;
+            [functionName: string]: Function | undefined;
             /** triggered before saving the model */
             before_save?: (model: ExpressCassandraModel, options: QueryParameter) => boolean;
             /** triggered after saving the model */
@@ -219,6 +235,7 @@ declare module 'express-cassandra' {
 
         update(queryObject: {}, updateValues: {}, options: {return_query: true} | QueryParameter, callback: (err: string) => void): ExpressCassandraQuery;
         update(queryObject: {}, updateValues: {}, options: {return_query: false} | QueryParameter, callback: (err: string) => void): {} | undefined;
+        updateAsync(queryObject: {}, updateValues: {}, options: QueryParameter): Promise<ResultSet>;
 
         /**
          * sync model to database
@@ -226,22 +243,29 @@ declare module 'express-cassandra' {
          */
         syncDB(callback: (err: string, result: boolean) => void): void;
 
-        find(query: QueryObject, callback: (err: any, result: Array<any>) => void): void;
-        find(query: QueryObject, options: QueryParameter, callback: (err: any, result: Array<any>) => void): void;
-        findOne(query: QueryObject, options: QueryParameter, callback: (err: any, result: any) => void): void;
-        eachRow(query: QueryObject, options: QueryParameter, eachRow: (index: number, row: any) => void, callback: (err: any, result: ExpressCassandraPageModel) => void): void;
-        findOneAsync(query: QueryObject): Promise<any>;
+        find<T = any>(query: QueryObject, callback: (err: any, result: Array<T>) => void): void;
+        findAsync<T = any>(query: QueryObject): Promise<Array<T>>;
+        find<T = any>(query: QueryObject, options: QueryParameter, callback: (err: any, result: Array<T>) => void): void;
+        findAsync<T = any>(query: QueryObject, options: QueryParameter): Promise<Array<T>>;
+        findOne<T = any>(query: QueryObject, callback: (err: any, result: T) => void): void;
+        findOneAsync<T = any>(query: QueryObject): Promise<T>;
+        findOne<T = any>(query: QueryObject, options: QueryParameter, callback: (err: any, result: T) => void): void;
+        findOneAsync<T = any>(query: QueryObject, options: QueryParameter): Promise<T>;
+        eachRow<T = any>(query: QueryObject, options: QueryParameter, eachRow: (index: number, row: T) => void, callback: (err: any, result: ExpressCassandraPageModel) => void): void;
         stream(query: QueryObject, options: QueryParameter, callback: (reader: any) => void): void;
-
-        saveAsync(): Promise<void>;
+        streamAsync(query: QueryObject, options: QueryParameter): Promise<any>;
 
         save(callback: (err: string) => void): void;
+        saveAsync(): Promise<void>;
         save(options: {return_query: true} | QueryParameter, callback: (err: string) => void): ExpressCassandraQuery;
         save(options: {return_query: false} | QueryParameter, callback: (err: string) => void): {} | undefined;
+        saveAsync(options: QueryParameter): Promise<void>;
 
         delete(callback: (err: string) => void): void;
+        deleteAsync(): Promise<void>;
         delete(query: QueryObject, callback: (err: string) => void): ExpressCassandraQuery;
         delete(query: QueryObject, callback: (err: string) => void): {} | undefined;
+        deleteAsync(query: QueryObject): Promise<void>;
 
         /** getter for data type */
         get_data_types(): any;
@@ -288,7 +312,7 @@ declare module 'express-cassandra' {
 
 
 
-        /**
+    /**
      * Provides Authenticator instances to be used when connecting to a host.
      */
     export class AuthProvider {
