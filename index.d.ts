@@ -1,10 +1,12 @@
 
 /// <reference types="node" />
+/// <reference types="cassandra-driver" />
+/// <reference types="long" />
+
+import { types } from 'cassandra-driver';
+import * as Long from 'long';
 
 declare module 'express-cassandra' {
-    export function uuid(): string;
-    export function uuidFromString(str: string): any;
-
     export const driver: any;
     //export let instance: ExpressCassandraInstance;
 
@@ -75,12 +77,12 @@ declare module 'express-cassandra' {
     export interface ResultSet {
         info: {
             queriedHost: string,
-           triedHosts: { [key: string]: any },
-           speculativeExecutions: number,
-           achievedConsistency: number,
-           traceId: any,
-           warnings: string,
-           customPayload: string
+            triedHosts: { [key: string]: any },
+            speculativeExecutions: number,
+            achievedConsistency: number,
+            traceId: any,
+            warnings: string,
+            customPayload: string
         },
         rows: Array<{ '[applied]': boolean }>;
         rowLength: number;
@@ -152,7 +154,9 @@ declare module 'express-cassandra' {
             set: (value: any) => void;
         }
         default?: Function | string | {'$db_function': string};
-        rule?: Function | Validator
+        typeDef?: string;
+        rule?: Function | Validator;
+        static?: boolean
     }
 
     export interface ClusteringOrder {
@@ -289,30 +293,48 @@ declare module 'express-cassandra' {
         public instance: {
             [key: string]: ExpressCassandraModel;
         }
-        static driver: {
+        static driver:  {
             auth: {
+                AuthProvider: AuthProvider;
+                Authenticator: Authenticator;
                 PlainTextAuthProvider: PlainTextAuthProvider;
             }
         }
-        public loadSchema(modelName: string, schema: ModelSchema): ExpressCassandraClient;
+        static datatypes: {
+            Long: Long;
+            LocalDate: types.LocalDate;
+            BigDecimal: types.BigDecimal;
+            InetAddress: types.InetAddress;
+            LocalTime: types.LocalTime;
+            TimeUuid: types.TimeUuid;
+            Tuple: types.Tuple;
+            Uuid: types.Uuid;
+            Integer: types.Integer;
+        }
 
+        public static uuid(): string;
+        public static uuidFromString(str: string): Buffer;
+        public static uuidFromBuffer(buffer: Buffer): string;
+        public static timeuuid(): Buffer;
+        public static timeuuidFromString(str: string): Buffer;
+        public static timeuuidFromBuffer(buf: Buffer): Buffer;
+        public static timeuuidFromDate(date: Date): Buffer;
+        public static maxTimeuuid(date: Date): Buffer;
+        public static minTimeuuid(date: Date): Buffer;
+        
+        public loadSchema(modelName: string, schema: ModelSchema): ExpressCassandraClient;
+        
         public doBatch(queries: Array<ExpressCassandraQuery>, options: QueryParameter, callback: Function): void;
         public doBatchAsync(): Promise<boolean>;
+        public close(): void;
+        public closeAsync(): Promise<void>;
     }
-
+    
     export type DbFieldTypes = 'ascii' | 'bigint' | 'blob' | 'boolean' | 'counter' | 'date' | 'decimal' | 'double' | 'float' | 'frozen' | 'inet' | 'int' | 'list' | 'map' | 'set' | 'smallint' | 'text' | 'time' | 'timestamp' | 'timeuuid' | 'tinyint' | 'tuple' | 'uuid' | 'varchar' | 'varint';
     export type Filters = '$eq:' | '$ne' | '$isnt' | '$gt' | '$lt' | '$gte' | '$lte' | '$in' | '$like' | '$token' | '$contains' | '$contains_key';
-
-
-    export enum consistencies {
-        one,
-        two
-    }
-
-
-
-
-
+    
+    
+    
     /**
      * Provides Authenticator instances to be used when connecting to a host.
      */
