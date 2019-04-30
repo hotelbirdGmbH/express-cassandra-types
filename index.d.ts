@@ -289,7 +289,7 @@ declare module 'express-cassandra' {
         public instance: {
             [key: string]: ExpressCassandraModel;
         }
-        public driver: {
+        static driver: {
             auth: {
                 PlainTextAuthProvider: PlainTextAuthProvider;
             }
@@ -1270,3 +1270,4 @@ declare module 'express-cassandra' {
         toString(): string;
     }
 }
+export default ExpressCassandraClient;
