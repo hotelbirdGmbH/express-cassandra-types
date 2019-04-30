@@ -312,15 +312,15 @@ declare module 'express-cassandra' {
             Integer: types.Integer;
         }
 
-        public static uuid(): string;
-        public static uuidFromString(str: string): Buffer;
-        public static uuidFromBuffer(buffer: Buffer): string;
-        public static timeuuid(): Buffer;
-        public static timeuuidFromString(str: string): Buffer;
-        public static timeuuidFromBuffer(buf: Buffer): Buffer;
-        public static timeuuidFromDate(date: Date): Buffer;
-        public static maxTimeuuid(date: Date): Buffer;
-        public static minTimeuuid(date: Date): Buffer;
+        public uuid(): string;
+        public uuidFromString(str: string): Buffer;
+        public uuidFromBuffer(buffer: Buffer): string;
+        public timeuuid(): Buffer;
+        public timeuuidFromString(str: string): Buffer;
+        public timeuuidFromBuffer(buf: Buffer): Buffer;
+        public timeuuidFromDate(date: Date): Buffer;
+        public maxTimeuuid(date: Date): Buffer;
+        public minTimeuuid(date: Date): Buffer;
         
         public loadSchema(modelName: string, schema: ModelSchema): ExpressCassandraClient;
         
