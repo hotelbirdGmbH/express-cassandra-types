@@ -7,6 +7,16 @@ import { types } from 'cassandra-driver';
 import * as Long from 'long';
 
 declare module 'express-cassandra' {
+    function uuid(): string;
+    function uuidFromString(str: string): Buffer;
+    function uuidFromBuffer(buffer: Buffer): string;
+    function timeuuid(): Buffer;
+    function timeuuidFromString(str: string): Buffer;
+    function timeuuidFromBuffer(buf: Buffer): Buffer;
+    function timeuuidFromDate(date: Date): Buffer;
+    function maxTimeuuid(date: Date): Buffer;
+    function minTimeuuid(date: Date): Buffer;
+
     export const driver: any;
     //export let instance: ExpressCassandraInstance;
 
@@ -311,16 +321,15 @@ declare module 'express-cassandra' {
             Uuid: types.Uuid;
             Integer: types.Integer;
         }
-
-        public uuid(): string;
-        public uuidFromString(str: string): Buffer;
-        public uuidFromBuffer(buffer: Buffer): string;
-        public timeuuid(): Buffer;
-        public timeuuidFromString(str: string): Buffer;
-        public timeuuidFromBuffer(buf: Buffer): Buffer;
-        public timeuuidFromDate(date: Date): Buffer;
-        public maxTimeuuid(date: Date): Buffer;
-        public minTimeuuid(date: Date): Buffer;
+        static uuid(): string;
+        static uuidFromString(str: string): Buffer;
+        static uuidFromBuffer(buffer: Buffer): string;
+        static timeuuid(): Buffer;
+        static timeuuidFromString(str: string): Buffer;
+        static timeuuidFromBuffer(buf: Buffer): Buffer;
+        static timeuuidFromDate(date: Date): Buffer;
+        static maxTimeuuid(date: Date): Buffer;
+        static minTimeuuid(date: Date): Buffer;
         
         public loadSchema(modelName: string, schema: ModelSchema): ExpressCassandraClient;
         
