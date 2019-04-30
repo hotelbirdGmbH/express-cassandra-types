@@ -5,6 +5,7 @@ declare module 'express-cassandra' {
     export function uuid(): string;
     export function uuidFromString(str: string): any;
 
+    export const driver: any;
     //export let instance: ExpressCassandraInstance;
 
     export function createClient(options: ExpressCassandraCreateClientOptions): ExpressCassandraClient;
