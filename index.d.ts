@@ -245,8 +245,8 @@ declare module 'express-cassandra' {
             }
         };
     }
-    export class ExpressCassandraModel {
-        constructor(data: any);
+    export interface ExpressCassandraModel {
+        new(data: object): ExpressCassandraModel;
 
         update(queryObject: {}, updateValues: {}, options: {return_query: true} | QueryParameter, callback: (err: string) => void): ExpressCassandraQuery;
         update(queryObject: {}, updateValues: {}, options: {return_query: false} | QueryParameter, callback: (err: string) => void): {} | undefined;
@@ -347,7 +347,7 @@ declare module 'express-cassandra' {
     /**
      * Provides Authenticator instances to be used when connecting to a host.
      */
-    export class AuthProvider {
+    export interface AuthProvider {
         /**
          * Returns an Authenticator instance to be used when connecting to a host.
          * @param endpoint The ip address and port number in the format ip:port
@@ -359,7 +359,7 @@ declare module 'express-cassandra' {
     /**
      * Provides plain text Authenticator instances to be used when connecting to a host.
      */
-    export class PlainTextAuthProvider extends AuthProvider {
+    export interface PlainTextAuthProvider extends AuthProvider {
         /**
          * Creates a new instance of the Authenticator provider
          *
@@ -370,7 +370,7 @@ declare module 'express-cassandra' {
          * @param username User name in plain text
          * @param password Password in plain text
          */
-        constructor(username: string, password: string);
+        new(username: string, password: string): PlainTextAuthProvider;
     }
 
     /**
@@ -378,8 +378,9 @@ declare module 'express-cassandra' {
      * Each time a new connection is created and the server requires authentication,
      * a new instance of this class will be created by the corresponding.
      */
-    export class Authenticator {
-
+    export interface Authenticator {
+        /** construct a new host map */
+        new(): Authenticator;
         /**
          * Evaluates a challenge received from the Server. Generally, this method should callback with no error and no additional params when authentication is complete from the client perspective.
          * @param challenge
@@ -399,7 +400,9 @@ declare module 'express-cassandra' {
          */
         onAuthenticationSuccess(token: Buffer): void;
     }
-    export class HostMap {
+    export interface HostMap {
+        /** construct a new host map */
+        new(): HostMap;
         /** Removes all items from the map */
         clear(): Array<Host>;
         /** Executes a provided function once per map element. */
@@ -436,7 +439,10 @@ declare module 'express-cassandra' {
         prependOnceListener(event: "remove", listener: () => void): this;
     }
 
-    export class Host {
+    export interface Host {
+        /** construct a new Host */
+        new(): Host;
+
         /** Gets ip address and port number of the node separated by :. */
         address: string;
         /** Gets string containing the Cassandra version. */
@@ -459,11 +465,14 @@ declare module 'express-cassandra' {
     /**
      * Base class for Load Balancing Policies
      */
-    export class LoadBalancingPolicy {
+    export interface LoadBalancingPolicy {
+        /** construct a new LoadBalancingPolicy */
+        new(): LoadBalancingPolicy;
+
         /**
          * Initializes the load balancing policy, called after the driver obtained the information of the cluster.
          */
-        init (client: Client, hosts: HostMap, callback: Function): void;
+        init(client: Client, hosts: HostMap, callback: Function): void;
 
         /**
          * Returns the distance assigned by this policy to the provided host.
@@ -482,7 +491,9 @@ declare module 'express-cassandra' {
     }
 
     /** This policy yield nodes in a round-robin fashion. */
-    export class RoundRobinPolicy extends LoadBalancingPolicy {
+    export interface RoundRobinPolicy extends LoadBalancingPolicy {
+        /** construct a new RoundRobinPolicy */
+        new(): RoundRobinPolicy;
 
         /**
          * Returns an iterator with the hosts for a new query. Each new query will call this method.
@@ -502,15 +513,16 @@ declare module 'express-cassandra' {
      * In other words, this policy guarantees that no host in a remote data center will be queried unless
      * no host in the local data center can be reached.
      */
-    export class DCAwareRoundRobinPolicy extends LoadBalancingPolicy {
+    export interface DCAwareRoundRobinPolicy extends LoadBalancingPolicy {
         localHostsArray: Array<Host>;
         remoteHostsArray: Array<Host>;
 
-        /**
+        /** 
+         * construct a new RoundRobinPolicy 
          * @param localDc local datacenter name.
          * @param usedHostsPerRemoteDc the number of host per remote datacenter that the policy will yield \ in a newQueryPlan after the local nodes
          */
-        constructor(localDc?: string, usedHostsPerRemoteDc?: number);
+        new(localDc?: string, usedHostsPerRemoteDc?: number): DCAwareRoundRobinPolicy;
 
         /**
          * Returns an iterator with the hosts for a new query. Each new query will call this method.
@@ -526,9 +538,9 @@ declare module 'express-cassandra' {
     /**
      * A wrapper load balancing policy that add token awareness to a child policy..
      */
-    export class TokenAwarePolicy extends LoadBalancingPolicy {
+    export interface TokenAwarePolicy extends LoadBalancingPolicy {
 
-        constructor(childPolicy: LoadBalancingPolicy);
+        new(childPolicy: LoadBalancingPolicy): TokenAwarePolicy;
         /**
          * Returns an iterator with the hosts for a new query. Each new query will call this method.
          * The first host in the result will then be used to perform the query.
@@ -553,13 +565,13 @@ declare module 'express-cassandra' {
      * connections to hosts of the local data-center then you should use DCAwareRoundRobinPolicy and not this policy
      * in particular.
      */
-    export class WhiteListPolicy extends LoadBalancingPolicy {
+    export interface WhiteListPolicy extends LoadBalancingPolicy {
         /**
          * Create a new policy that wraps the provided child policy but only “allow” hosts from the provided while list.
          * @param childPolicy the wrapped policy
          * @param whiteList the white listed hosts address in the format ipAddress:port. Only hosts from this list may get connected to (whether they will get connected to or not depends on the child policy).
          */
-        constructor(childPolicy: LoadBalancingPolicy, whiteList: Array<string>);
+        new(childPolicy: LoadBalancingPolicy, whiteList: Array<string>): WhiteListPolicy;
 
         /**
          * Uses the child policy to return the distance to the host if included in the white list. Any host not in the while list will be considered ignored.
@@ -589,7 +601,8 @@ declare module 'express-cassandra' {
      * Please note that the contact points addresses provided while creating the Client instance are
      * not “translated”, only IP address retrieve from or sent by Cassandra nodes to the driver are.
      */
-    export class AddressTranslator {
+    export interface AddressTranslator {
+        new(): AddressTranslator;
         /**
          * Translates a Cassandra rpc_address to another address if necessary
          * @param address the address of a node as returned by Cassandra. Note that if the rpc_address of a node has been configured to 0.0.0.0 server side, then the provided address will be the node listen_address, not 0.0.0.0.
@@ -604,7 +617,8 @@ declare module 'express-cassandra' {
     /**
      * Base class for Reconnection Policies
      */
-    export class ReconnectionPolicy {
+    export interface ReconnectionPolicy {
+        new(): ReconnectionPolicy;
         /**
          * A new reconnection schedule.
          * @returns An infinite iterator
@@ -616,20 +630,20 @@ declare module 'express-cassandra' {
     /**
      * A reconnection policy that waits a constant time between each reconnection attempt.
      */
-    export class ConstantReconnectionPolicy extends ReconnectionPolicy {
+    export interface ConstantReconnectionPolicy extends ReconnectionPolicy {
         /**
          * A reconnection policy that waits a constant time between each reconnection attempt.
          *
          * @param delay Delay in ms
          */
-        constructor(delay: number);
+        new(delay: number): ConstantReconnectionPolicy;
     }
 
     /**
      * A reconnection policy that waits exponentially longer between each reconnection attempt
      * (but keeps a constant delay once a maximum delay is reached).
      */
-    export class ExponentialReconnectionPolicy extends ReconnectionPolicy {
+    export interface ExponentialReconnectionPolicy extends ReconnectionPolicy {
         /**
          * A reconnection policy that waits exponentially longer between each reconnection attempt
          * (but keeps a constant delay once a maximum delay is reached).
@@ -638,7 +652,7 @@ declare module 'express-cassandra' {
          * @param maxDelay the maximum delay in ms to wait between two reconnection attempt
          * @param startWithNoDelay Determines if the first attempt should be zero delay
          */
-        constructor(baseDelay: number, maxDelay: number, startWithNoDelay: boolean);
+        new(baseDelay: number, maxDelay: number, startWithNoDelay: boolean): ExponentialReconnectionPolicy;
     }
 
     /**
@@ -647,7 +661,7 @@ declare module 'express-cassandra' {
      *
      * Note that only idempotent statements will be speculatively retried.
      */
-    export abstract class SpeculativeExecutionPolicy {
+    export interface SpeculativeExecutionPolicy {
         /**
          * Initialization method that gets invoked on Client startup.
          * @param client Client
@@ -673,23 +687,23 @@ declare module 'express-cassandra' {
     /**
      * A SpeculativeExecutionPolicy that never schedules speculative executions.
      */
-    export class NoSpeculativeExecutionPolicy extends SpeculativeExecutionPolicy {
+    export interface NoSpeculativeExecutionPolicy extends SpeculativeExecutionPolicy {
         /**
          * Creates a new instance of NoSpeculativeExecutionPolicy.
          */
-        constructor();
+        new(): NoSpeculativeExecutionPolicy;
     }
 
     /**
      * A SpeculativeExecutionPolicy that schedules a given number of speculative executions, separated by a fixed delay.
      */
-    export class ConstantSpeculativeExecutionPolicy extends SpeculativeExecutionPolicy {
+    export interface ConstantSpeculativeExecutionPolicy extends SpeculativeExecutionPolicy {
         /**
          * Creates a new instance of ConstantSpeculativeExecutionPolicy.
          * @param delay The delay between each speculative execution
          * @param maxSpeculativeExecutions The amount of speculative executions that should be scheduled after the initial execution. Must be strictly positive.
          */
-        constructor(delay: number, maxSpeculativeExecutions: number);
+        new(delay: number, maxSpeculativeExecutions: number): ConstantSpeculativeExecutionPolicy;
     }
 
 
@@ -700,11 +714,11 @@ declare module 'express-cassandra' {
      * implementations should generate monotonically increasing timestamps for successive
      * invocations of TimestampGenerator.next().
      */
-    export class TimestampGenerator {
+    export interface TimestampGenerator {
         /**
          * Creates a new instance of TimestampGenerator.
          */
-        constructor();
+        new(): TimestampGenerator;
 
         /**
          * Returns the next timestamp.
@@ -731,13 +745,13 @@ declare module 'express-cassandra' {
      * within the same millisecond as the last, it fills the microsecond portion of the new timestamp
      * with the value of an incrementing counter.
      */
-    export class MonotonicTimestampGenerator extends TimestampGenerator {
+    export interface MonotonicTimestampGenerator extends TimestampGenerator {
         /**
          * Creates a new instance of MonotonicTimestampGenerator.
          * @param warningThreshold Determines how far in the future timestamps are allowed to drift before a warning is logged, expressed in milliseconds. Default: 1000.
          * @param minLogInterval In case of multiple log events, it determines the time separation between log events, expressed in milliseconds. Use 0 to disable. Default: 1000.
          */
-        constructor(warningThreshold?: number, minLogInterval?: number);
+        new(warningThreshold?: number, minLogInterval?: number): MonotonicTimestampGenerator;
 
         /**
          * Returns the current time in milliseconds since UNIX epoch
@@ -896,9 +910,9 @@ declare module 'express-cassandra' {
      * Represents a set configurations to be used in a statement execution to be used for a single Client instance.
      * An ExecutionProfile instance should not be shared across different Client instances.
      */
-    export class ExecutionProfile {
+    export interface ExecutionProfile {
         /** Creates a new instance of ExecutionProfile */
-        constructor(name?: string, options?: ExecutionProfile);
+        new(name?: string, options?: ExecutionProfile): ExecutionProfile;
 
         /** Consistency level */
         consistency?: number;
@@ -919,7 +933,7 @@ declare module 'express-cassandra' {
      * Determines what to do when the drivers runs into an specific Cassandra exception
      * @constructor
      */
-    export class RetryPolicy {
+    export interface RetryPolicy {
         /**
          * Determines the retry decision for the retry policies.
          * @type {Object}
@@ -928,7 +942,7 @@ declare module 'express-cassandra' {
          * @property ignore
          * @static
          */
-        static retryDecision: {rethrow: number; retry: number; ignore: number};
+        retryDecision: {rethrow: number; retry: number; ignore: number};
 
         /**
          * Determines what to do when the driver gets an UnavailableException response from a Cassandra node.
@@ -978,13 +992,13 @@ declare module 'express-cassandra' {
          * applied server-side</em>; a retry should only be attempted if the request is known to be idempotent.
          * </p>
          * @param info OperationInfo
-         * @paramun consistency The consistency level of the query that triggered the exception.
+         * @param consistency The consistency level of the query that triggered the exception.
          * @param err The error that caused this request to fail.
          */
         onRequestError(info: OperationInfo, consistency: number | undefined, err: number): DecisionInfo;
 
         /**
-         * Returnsaretry the request with the given consistency.
+         * Returns a retry the request with the given consistency.
          * @param consistency When specified, it retries the request with the given consistency.
          * @param useCurrentHost When specified, determines if the retry should be made using the same coordinator. Default: true.
          */
@@ -1057,20 +1071,20 @@ declare module 'express-cassandra' {
      *    const row = result.first();
      *    console.log(row['key']);
      */
-    class Client {
+    export interface Client {
         /** Gets an associative array of cluster hosts. */
-        public hosts: HostMap;
+        hosts: HostMap;
         /** Gets the name of the active keyspace. */
-        public keyspace: string;
+        keyspace: string;
         /** Gets the schema and cluster metadata information. */
-        public metadata: {};
+        metadata: {};
 
 
         /**
          * Creates a new instance of Client.
          * @param options The options for this instance.
          */
-        constructor(options: ClientOptions);
+        new(options: ClientOptions): Client;
 
         /**
          * Executes batch of queries on an available connection to a host.
@@ -1248,11 +1262,11 @@ declare module 'express-cassandra' {
     /**
      * Readable stream using to yield data from a result or a field
      */
-    export class ResultStream {
+    export interface ResultStream {
         /**
          * Readable stream using to yield data from a result or a field
          */
-        constructor();
+        new(): ResultStream;
 
         /**
          * Allows for throttling, helping nodejs keep the internal buffers reasonably sized.
@@ -1266,14 +1280,14 @@ declare module 'express-cassandra' {
      *
      * Exposes information on the connections maintained by a Client at a specific time.
     */
-    export class ClientState {
+    export interface ClientState {
         /**
          * Creates a new instance of ClientState.
          * @param hosts
          * @param openConnections
          * @param inFlightQueries
          */
-        constructor(hosts: Array<Host>, openConnections: {}, inFlightQueries: {});
+        new(hosts: Array<Host>, openConnections: {}, inFlightQueries: {}): ClientState;
 
         /**
          * Get an array of hosts to which the client is connected to.
