@@ -94,7 +94,7 @@ declare module 'express-cassandra' {
             warnings: string,
             customPayload: string
         },
-        rows: Array<{ '[applied]': boolean }>;
+        rows: Array<{ '[applied]': boolean, [key: string]: any }>;
         rowLength: number;
         columns: Array<{ name: string, type: object }>;
         pageState: any;
@@ -271,16 +271,16 @@ declare module 'express-cassandra' {
         streamAsync(query: QueryObject, options: QueryParameter): Promise<any>;
 
         save(callback: (err: string) => void): void;
-        saveAsync(): Promise<void>;
+        saveAsync(): Promise<ResultSet>;
         save(options: {return_query: true} | QueryParameter, callback: (err: string) => void): ExpressCassandraQuery;
         save(options: {return_query: false} | QueryParameter, callback: (err: string) => void): {} | undefined;
-        saveAsync(options: QueryParameter): Promise<void>;
+        saveAsync(options: QueryParameter): Promise<ResultSet>;
 
         delete(callback: (err: string) => void): void;
-        deleteAsync(): Promise<void>;
+        deleteAsync(): Promise<ResultSet>;
         delete(query: QueryObject, callback: (err: string) => void): ExpressCassandraQuery;
         delete(query: QueryObject, callback: (err: string) => void): {} | undefined;
-        deleteAsync(query: QueryObject): Promise<void>;
+        deleteAsync(query: QueryObject): Promise<ResultSet>;
 
         /** getter for data type */
         get_data_types(): any;
