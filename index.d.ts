@@ -205,7 +205,7 @@ declare module 'express-cassandra' {
             [viewName: string]: MaterializedView
         };
         /** indexed fields for faster search */
-        indexes?: Array<string>;
+        indexes?: Array<string | Array<string>>;
         /** customized indexes in the database */
         custom_indexes?: Array<CustomIndexes>;
         /** table name for the database */
