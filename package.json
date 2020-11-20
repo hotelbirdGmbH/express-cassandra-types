@@ -1,6 +1,6 @@
 {
     "private": true,
-    "name": "types-express-cassandra",
+    "name": "@types/express-cassandra",
     "version": "0.9.1",
     "description": "type definitions for cassandra express oem",
     "author": "Hotelbird / Alexander Halemba",
