@@ -1,15 +1,19 @@
 {
-    "private": true,
-    "name": "types-express-cassandra",
+    "private": false,
+    "name": "@types/express-cassandra",
     "version": "0.9.1",
     "description": "type definitions for cassandra express oem",
     "author": "Hotelbird / Alexander Halemba",
     "license": "MIT",
+    "types": "index.d.ts",
     "engines": {
         "node": ">=7.8.0"
     },
+    "scripts": {
+        "push": "npm install && npm publish"
+    },
     "dependencies": {
-        "@types/node": "^11.13.8",
-        "@types/cassandra-driver": "^3.3.0"
+        "@types/node": "^14.14.9",
+        "@types/cassandra-driver": "^4.1.1"
     }
 }
